@@ -8,10 +8,21 @@ Because these snippets span many environments and coding styles, certain challen
 
 The first structure proposal to keep things flexible and allows future expansion without breaking existing workflows:
 
-snip/
+## Repository Structure
+
+- `snip/`
+  - `Core/` – Core `.inc.php` files, legacy snippets, shared utilities
+  - `Html/` – Output-visible components, templates, UI helpers
+  - `Net/` – Network logic, API helpers, inter-service utilities
+  - `Assets/` – Images, icons, and other shared static files
+  - `Misc/` – Unsorted or experimental snippets pending classification
+
+
+[code]snip/
 ├─ 3rd/           # third party parts to be called locally via other code (like "vendor")
 ├─ Core/          # Core .inc.php files, legacy snippets, shared utilities
 ├─ Html/          # Output-visible components, templates, UI helpers
 ├─ Net/           # Network logic, API helpers, inter-service utilities
 ├─ Assets/        # Images, icons, and other shared static files
 └─ Misc/          # Unsorted or experimental snippets pending classification
+[/code]
