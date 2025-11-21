@@ -1,5 +1,7 @@
 <?php
 	
+// documentation; https://www.geeksforgeeks.org/php/dynamically-generating-a-qr-code-using-php/
+
 require_once(__DIR__.'/../3rd/phpqrcode/qrlib.php');
 
 // QRcode::png($text, $file, $ecc, $pixel_Size, $frame_Size);
