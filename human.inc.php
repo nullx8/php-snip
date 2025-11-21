@@ -1,0 +1,277 @@
+<?php
+############################################################################################
+#
+# HumanSize (size); human readable size (1024) = (1kb)
+# HumanAgo (timestanp,level,beginning unit); Human Readable "ago" (time(),8,"second")
+#
+# Partly extended with subfunctions
+############################################################################################
+
+defined('MINUTE_IN_SECONDS') or define('MINUTE_IN_SECONDS', 60);
+defined('HOUR_IN_SECONDS') or define('HOUR_IN_SECONDS', 3600);
+defined('DAY_IN_SECONDS') or define('DAY_IN_SECONDS', 86400);
+
+function HumanPhone($number,$country=false){
+	// this function does "just" make a phone number more readable by making sure its Countrycode and/or 0 is in front .. cut off after 4 digits and continue the rest
+	// i know this is not following any rules .. but requested by darcy
+	
+	$number = preg_replace("/[^0-9]/","",$number); // make sure the number is only "numbers"
+	
+	if ((isset($number[0]))&&($number[0] != "0")) { 
+		$number = "0".$number; // add a zero if not already there
+	}
+	
+	if ($country) {
+		// we are in a different country so use the users country code instead of a zero
+		
+	}
+	else {
+		return substr($number, 0, 5)." ".substr($number, 5);
+		
+	}
+	
+}
+function HumanMoney( $amount, $hl ) {
+// this function not working yet .. beeing developed in fxfish.php
+		switch ($currency):
+		case "EUR":
+			setlocale(LC_MONETARY, 'nl_NL');
+//			$amount = money_format('%(#1n', $amount);	
+//			$amount = str_replace('Eu','&euro;',$amount);
+		break;
+
+		case "USD":
+		default:
+			setlocale(LC_MONETARY, 'en_US.UTF-8');
+			$amount = money_format('%.2n', $amount);
+	endswitch;
+	return $amount;
+}
+
+function HumanTimeDiff( $from, $to = '' ) {
+	if (empty( $to )) { $to = time(); }
+
+	$diff = (int) abs( $to - $from );
+	
+	if ( $diff <= HOUR_IN_SECONDS ) {
+        $mins = @round( $diff / MINUTE_IN_SECONDS );
+        if ( $mins <= 1 ) {
+        	$mins = 1;
+        }
+        $since = sprintf('%s min', $mins );
+    }
+	elseif ( ( $diff <= DAY_IN_SECONDS ) && ( $diff > HOUR_IN_SECONDS ) ) {
+		$hours = @round( $diff / HOUR_IN_SECONDS );
+		if ( $hours <= 1 ) {
+			$hours = 1;
+		}
+		$since = sprintf('%s hour', $hours );
+	}
+	elseif ( $diff >= DAY_IN_SECONDS ) {
+		$days = @round( $diff / DAY_IN_SECONDS );
+		if ( $days <= 1 ) {
+			$days = 1;
+		}
+		$since = sprintf('%s day', $days );
+	}
+	return $since;
+}
+
+
+function HumanSize ($size, $retstring = null) {
+        // adapted from code at http://aidanlister.com/repos/v/function.size_readable.php
+        $sizes = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        if ($retstring === null) { $retstring = '%01.2f %s'; }
+        $lastsizestring = end($sizes);
+        foreach ($sizes as $sizestring) {
+                if ($size < 1024) { break; }
+                if ($sizestring != $lastsizestring) { $size /= 1024; }
+        }
+        if ($sizestring == $sizes[0]) { $retstring = '%01d %s'; } // Bytes aren't normally fractional
+        return sprintf($retstring, $size, $sizestring);
+}
+
+# max_detail_levels - how deep to go down? If max_detail_levels is set to 2, text will output something like "3 days 4 hours" instead of "3 days 4 hours 10 minutes 55 seconds"
+# precision_level - this is what rspenc29 was trying to accomplish. If you want to only report a minimum value of say 1 hour, then you should set this to "hour"
+
+function HumanAgo($timestamp,$max_detail_levels=2, $precision_level='second', $word = "yes", $shortperiods = false, $maxage = false){
+    // $word needs to be True/false setting instead of a variable 
+    // $maxage = 2592000;
+	$detailed=true;
+	$now = time();
+
+    	#If the difference is positive "ago" - negative "away"
+    	($timestamp >= $now) ? $action = 'away' : $action = 'ago';
+//    	($timestamp >= $now) ? $action = 'ago' : $action = 'ago';
+
+    # Set the periods of time
+	$periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
+    if ($shortperiods === true) {
+    	$periods = array("sec", "min", "hr", "day", "wk", "mth", "yr", "decade");
+    }
+    $lengths = array(1, 60, 3600, 86400, 604800, 2630880, 31570560, 315705600);
+
+    $diff = ($action == 'away' ? $timestamp - $now : $now - $timestamp);
+  
+    $prec_key = array_search($precision_level,$periods);
+  
+    # round diff to the precision_level
+    $diff = round(($diff/$lengths[$prec_key]))*$lengths[$prec_key];
+  
+    # if the diff is very small, display for ex "just seconds ago"
+    if ((isset($maxage))&&($maxage>0)&&($diff > $maxage)) {
+	    // too old entry
+		return "some time ".$action;
+	}
+	if ($diff <= 10) {
+        $periodago = max(0,$prec_key-1);
+        $agotxt = $periods[$periodago].'s';
+
+        if ($word!="yes") {
+    		return $agotxt;
+        }
+        else {
+    		return "just $agotxt $action";
+        }
+    }
+  
+    # Go from decades backwards to seconds
+    $time = "";
+    for ($i = (sizeof($lengths) - 1); $i>0; $i--) {
+        if($diff > $lengths[$i-1] && ($max_detail_levels > 0)) {        # if the difference is greater than the length we are checking... continue
+            $val = floor($diff / $lengths[$i-1]);    # 65 / 60 = 1.  That means one minute.  130 / 60 = 2. Two minutes.. etc
+            $time .= $val ." ". $periods[$i-1].($val > 1 ? 's ' : ' ');  # The value, then the name associated, then add 's' if plural
+            $diff -= ($val * $lengths[$i-1]);    # subtract the values we just used from the overall diff so we can find the rest of the information
+            if(!$detailed) { $i = 0; }    # if detailed is turn off (default) only show the first set found, else show all information
+            $max_detail_levels--;
+        }
+    }
+ 
+    # Basic error checking.
+    if($time == "") {
+        return "Error-- Unable to calculate time.";
+    } else {
+        if ($word!="yes") {
+        	return $time;
+        }
+        else {
+           	return $time.$action;
+        }
+    }
+}
+
+if (!is_callable('money_format')) {
+function money_format($floatcurr, $curr = 'USD')
+{
+    $currencies['ARS'] = array(2, ',', '.');          //  Argentine Peso
+    $currencies['AMD'] = array(2, '.', ',');          //  Armenian Dram
+    $currencies['AWG'] = array(2, '.', ',');          //  Aruban Guilder
+    $currencies['AUD'] = array(2, '.', ' ');          //  Australian Dollar
+    $currencies['BSD'] = array(2, '.', ',');          //  Bahamian Dollar
+    $currencies['BHD'] = array(3, '.', ',');          //  Bahraini Dinar
+    $currencies['BDT'] = array(2, '.', ',');          //  Bangladesh, Taka
+    $currencies['BZD'] = array(2, '.', ',');          //  Belize Dollar
+    $currencies['BMD'] = array(2, '.', ',');          //  Bermudian Dollar
+    $currencies['BOB'] = array(2, '.', ',');          //  Bolivia, Boliviano
+    $currencies['BAM'] = array(2, '.', ',');          //  Bosnia and Herzegovina, Convertible Marks
+    $currencies['BWP'] = array(2, '.', ',');          //  Botswana, Pula
+    $currencies['BRL'] = array(2, ',', '.');          //  Brazilian Real
+    $currencies['BND'] = array(2, '.', ',');          //  Brunei Dollar
+    $currencies['CAD'] = array(2, '.', ',');          //  Canadian Dollar
+    $currencies['KYD'] = array(2, '.', ',');          //  Cayman Islands Dollar
+    $currencies['CLP'] = array(0,  '', '.');          //  Chilean Peso
+    $currencies['CNY'] = array(2, '.', ',');          //  China Yuan Renminbi
+    $currencies['COP'] = array(2, ',', '.');          //  Colombian Peso
+    $currencies['CRC'] = array(2, ',', '.');          //  Costa Rican Colon
+    $currencies['HRK'] = array(2, ',', '.');          //  Croatian Kuna
+    $currencies['CUC'] = array(2, '.', ',');          //  Cuban Convertible Peso
+    $currencies['CUP'] = array(2, '.', ',');          //  Cuban Peso
+    $currencies['CYP'] = array(2, '.', ',');          //  Cyprus Pound
+    $currencies['CZK'] = array(2, '.', ',');          //  Czech Koruna
+    $currencies['DKK'] = array(2, ',', '.');          //  Danish Krone
+    $currencies['DOP'] = array(2, '.', ',');          //  Dominican Peso
+    $currencies['XCD'] = array(2, '.', ',');          //  East Caribbean Dollar
+    $currencies['EGP'] = array(2, '.', ',');          //  Egyptian Pound
+    $currencies['SVC'] = array(2, '.', ',');          //  El Salvador Colon
+    $currencies['ATS'] = array(2, ',', '.');          //  Euro
+    $currencies['BEF'] = array(2, ',', '.');          //  Euro
+    $currencies['DEM'] = array(2, ',', '.');          //  Euro
+    $currencies['EEK'] = array(2, ',', '.');          //  Euro
+    $currencies['ESP'] = array(2, ',', '.');          //  Euro
+    $currencies['EUR'] = array(2, ',', '.');          //  Euro
+    $currencies['FIM'] = array(2, ',', '.');          //  Euro
+    $currencies['FRF'] = array(2, ',', '.');          //  Euro
+    $currencies['GRD'] = array(2, ',', '.');          //  Euro
+    $currencies['IEP'] = array(2, ',', '.');          //  Euro
+    $currencies['ITL'] = array(2, ',', '.');          //  Euro
+    $currencies['LUF'] = array(2, ',', '.');          //  Euro
+    $currencies['NLG'] = array(2, ',', '.');          //  Euro
+    $currencies['PTE'] = array(2, ',', '.');          //  Euro
+    $currencies['GHC'] = array(2, '.', ',');          //  Ghana, Cedi
+    $currencies['GIP'] = array(2, '.', ',');          //  Gibraltar Pound
+    $currencies['GTQ'] = array(2, '.', ',');          //  Guatemala, Quetzal
+    $currencies['HNL'] = array(2, '.', ',');          //  Honduras, Lempira
+    $currencies['HKD'] = array(2, '.', ',');          //  Hong Kong Dollar
+    $currencies['HUF'] = array(0,  '', '.');          //  Hungary, Forint
+    $currencies['ISK'] = array(0,  '', '.');          //  Iceland Krona
+    $currencies['INR'] = array(2, '.', ',');          //  Indian Rupee
+    $currencies['IDR'] = array(2, ',', '.');          //  Indonesia, Rupiah
+    $currencies['IRR'] = array(2, '.', ',');          //  Iranian Rial
+    $currencies['JMD'] = array(2, '.', ',');          //  Jamaican Dollar
+    $currencies['JPY'] = array(0,  '', ',');          //  Japan, Yen
+    $currencies['JOD'] = array(3, '.', ',');          //  Jordanian Dinar
+    $currencies['KES'] = array(2, '.', ',');          //  Kenyan Shilling
+    $currencies['KWD'] = array(3, '.', ',');          //  Kuwaiti Dinar
+    $currencies['LVL'] = array(2, '.', ',');          //  Latvian Lats
+    $currencies['LBP'] = array(0,  '', ' ');          //  Lebanese Pound
+    $currencies['LTL'] = array(2, ',', ' ');          //  Lithuanian Litas
+    $currencies['MKD'] = array(2, '.', ',');          //  Macedonia, Denar
+    $currencies['MYR'] = array(2, '.', ',');          //  Malaysian Ringgit
+    $currencies['MTL'] = array(2, '.', ',');          //  Maltese Lira
+    $currencies['MUR'] = array(0,  '', ',');          //  Mauritius Rupee
+    $currencies['MXN'] = array(2, '.', ',');          //  Mexican Peso
+    $currencies['MZM'] = array(2, ',', '.');          //  Mozambique Metical
+    $currencies['NPR'] = array(2, '.', ',');          //  Nepalese Rupee
+    $currencies['ANG'] = array(2, '.', ',');          //  Netherlands Antillian Guilder
+    $currencies['ILS'] = array(2, '.', ',');          //  New Israeli Shekel
+    $currencies['TRY'] = array(2, '.', ',');          //  New Turkish Lira
+    $currencies['NZD'] = array(2, '.', ',');          //  New Zealand Dollar
+    $currencies['NOK'] = array(2, ',', '.');          //  Norwegian Krone
+    $currencies['PKR'] = array(2, '.', ',');          //  Pakistan Rupee
+    $currencies['PEN'] = array(2, '.', ',');          //  Peru, Nuevo Sol
+    $currencies['UYU'] = array(2, ',', '.');          //  Peso Uruguayo
+    $currencies['PHP'] = array(2, '.', ',');          //  Philippine Peso
+    $currencies['PLN'] = array(2, '.', ' ');          //  Poland, Zloty
+    $currencies['GBP'] = array(2, '.', ',');          //  Pound Sterling
+    $currencies['OMR'] = array(3, '.', ',');          //  Rial Omani
+    $currencies['RON'] = array(2, ',', '.');          //  Romania, New Leu
+    $currencies['ROL'] = array(2, ',', '.');          //  Romania, Old Leu
+    $currencies['RUB'] = array(2, ',', '.');          //  Russian Ruble
+    $currencies['SAR'] = array(2, '.', ',');          //  Saudi Riyal
+    $currencies['SGD'] = array(2, '.', ',');          //  Singapore Dollar
+    $currencies['SKK'] = array(2, ',', ' ');          //  Slovak Koruna
+    $currencies['SIT'] = array(2, ',', '.');          //  Slovenia, Tolar
+    $currencies['ZAR'] = array(2, '.', ' ');          //  South Africa, Rand
+    $currencies['KRW'] = array(0,  '', ',');          //  South Korea, Won
+    $currencies['SZL'] = array(2, '.', ', ');         //  Swaziland, Lilangeni
+    $currencies['SEK'] = array(2, ',', '.');          //  Swedish Krona
+    $currencies['CHF'] = array(2, '.', '\'');         //  Swiss Franc
+    $currencies['TZS'] = array(2, '.', ',');          //  Tanzanian Shilling
+    $currencies['THB'] = array(2, '.', ',');          //  Thailand, Baht
+    $currencies['TOP'] = array(2, '.', ',');          //  Tonga, Paanga
+    $currencies['AED'] = array(2, '.', ',');          //  UAE Dirham
+    $currencies['UAH'] = array(2, ',', ' ');          //  Ukraine, Hryvnia
+    $currencies['USD'] = array(2, '.', ',');          //  US Dollar
+    $currencies['VUV'] = array(0,  '', ',');          //  Vanuatu, Vatu
+    $currencies['VEF'] = array(2, ',', '.');          //  Venezuela Bolivares Fuertes
+    $currencies['VEB'] = array(2, ',', '.');          //  Venezuela, Bolivar
+    $currencies['VND'] = array(0,  '', '.');          //  Viet Nam, Dong
+    $currencies['ZWD'] = array(2, '.', ' ');          //  Zimbabwe Dollar
+    // custom function to generate: ##,##,###.##
+//        return number_format($floatcurr, $currencies[$curr][0], $currencies[$curr][1], $currencies[$curr][2]);
+	return number_format($floatcurr, 2);
+
+}
+}
+
+?>
