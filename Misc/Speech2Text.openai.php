@@ -1,8 +1,12 @@
 <?php
 
 // Your OpenAI API key
-$apiKey = trim(file_get_contents(__DIR__.'../3rd/OpenAi/.Token'));
+$apiKey = trim(file_get_contents(__DIR__.'/../3rd/OpenAi/.Token'));
 
+// primitive Security check (compares last 6 digits of API-Key with http check header
+if (getallheaders()['check']!= substr($apiKey, -6)) {
+	die('Thanks for playing');
+}
 
 if (!isset($_FILES['audio']) || $_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
     echo "UPLOAD ERROR\n";
@@ -12,8 +16,8 @@ if (!isset($_FILES['audio']) || $_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
 
 $ts = time();
 $ext = pathinfo($_FILES['audio']['name'], PATHINFO_EXTENSION);
-$audioFile = __DIR__ . "../c/s2t.{$ts}." . $ext;
-$resultFile = __DIR__ . "/c/s2t.{$ts}.txt";
+$audioFile = __DIR__ . "/../c/s2t.{$ts}." . $ext;
+$resultFile = __DIR__ . "/../c/s2t.{$ts}.txt";
 
 move_uploaded_file($_FILES['audio']['tmp_name'], $audioFile);
 
