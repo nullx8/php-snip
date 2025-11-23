@@ -76,7 +76,7 @@ foreach (glob("$KEYDIR/*_public.pem") as $file) {
 // LOAD PRIVATE KEY FOR THIS SERVER
 // ------------------------------------------------------------
 
-$PRIVATE_KEY_PATH = "$KEYDIR/{$SERVER_ID}_private.pem";
+$PRIVATE_KEY_PATH = "server_private.pem";
 
 if (!file_exists($PRIVATE_KEY_PATH)) {
     die("Private key missing for server: $SERVER_ID");

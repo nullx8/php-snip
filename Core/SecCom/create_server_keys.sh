@@ -14,7 +14,7 @@ cd "$(dirname "$0")"
 KEYDIR="./keys"
 mkdir -p "$KEYDIR"
 
-PRIVATE_KEY="$KEYDIR/${SERVER_ID}_private.pem"
+PRIVATE_KEY="private.pem"
 PUBLIC_KEY="$KEYDIR/${SERVER_ID}_public.pem"
 
 echo "=== Creating keypair for $SERVER_ID ==="

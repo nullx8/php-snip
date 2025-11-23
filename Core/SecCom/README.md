@@ -33,7 +33,6 @@ git commit -m "Add master signing public key"
 
 ### 2. Creating a server’s keypair
 
-cd crypto
 ./create_server_keys.sh serverA
 # DO NOT commit the private key
 
