@@ -5,7 +5,7 @@
 // to be called with HTTP Herader 'check' containing the last 6 digits of the OpenAI API key, and a Audio file as HTTP POST
 // short gossip about its creation (no technical details here https://0x8.in.th/bye-bye-siri
 
-$settings = parse_ini_file(__DIR__.'/.env');
+$settings = parse_ini_file(__DIR__ . '/.env');
 
 if ((!isset($settings['APIKEY']))||(!isset($settings['LOGFILE']))||(!isset($settings['CACHE']))) {
 	die('CONFIG ERROR: APIKEY,LOGFILE,CACHE expected in ./.env');
