@@ -5,8 +5,13 @@
 // to be called with HTTP Herader 'check' containing the last 6 digits of the OpenAI API key, and a Audio file as HTTP POST
 // short gossip about its creation (no technical details here https://0x8.in.th/bye-bye-siri
 
-// read OpenAI API key
-$apiKey = trim(file_get_contents(__DIR__.'/../3rd/OpenAi/.Token'));
+$settings = parse_ini_file(__DIR__ . '/.env');
+
+if ((!isset($settings['APIKEY']))||(!isset($settings['LOGFILE']))||(!isset($settings['CACHE']))) {
+	die('CONFIG ERROR: APIKEY,LOGFILE,CACHE expected in ./.env');
+}
+
+$apiKey = trim(file_get_contents(__DIR__.$settings['APIKEY']));
 
 // primitive Security check (compares last 6 digits of API-Key with http check header
 if (getallheaders()['check']!= substr($apiKey, -6)) {
@@ -21,8 +26,9 @@ if (!isset($_FILES['audio']) || $_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
 
 $ts = time();
 $ext = pathinfo($_FILES['audio']['name'], PATHINFO_EXTENSION);
-$audioFile = __DIR__ . "/../c/s2t.{$ts}." . $ext;
-$resultFile = __DIR__ . "/../c/s2t.{$ts}.txt";
+$audioFile = $settings['CACHE']."/s2t.{$ts}." . $ext;
+$resultFile = $settings['CACHE']."/s2t.{$ts}.txt";
+$resultLog = $settings['LOGFILE'];
 
 move_uploaded_file($_FILES['audio']['tmp_name'], $audioFile);
 
@@ -70,5 +76,13 @@ if ((isset($text->text))&&(strlen($text->text)>1)) {
 } else {
 	$out['text'] = "?";
 }
+
+if ((strlen($err)>1)) {
+	file_put_contents($resultLog, date('Y-m-d H:i:s')."\nHTTP: $http\nERR:$err\nRES:$response\n\n", FILE_APPEND | LOCK_EX);
+}
+else {
+	file_put_contents($resultLog, date('Y-m-d H:i:s')."\n".$text->text."\n\n", FILE_APPEND | LOCK_EX);
+}
+touch($resultLog, (time()+1)); // makes sure the logfile is the newest one
 
 die(json_encode($out));
