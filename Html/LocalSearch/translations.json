@@ -3,16 +3,16 @@
     "index": {
       "title": "Human Readable variable outputs",
       "links": [
-        "/var/www/html/lib/snip/Html/human.inc.php"
+        "../human.inc.php"
       ]
     }
   },
   "search.php": {
     "index": {
-      "title": "LocalSearch Test file",
+      "title": "LocalSearch Test",
       "links": [
-        "/var/www/html/lib/snip/Html/LocalSearch/Tests/search.php",
-        "admin/test_panel.php"
+        "./search.php",
+        "../search.inc.php"
       ]
     }
   }
