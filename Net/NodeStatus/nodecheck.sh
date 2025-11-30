@@ -1,13 +1,14 @@
 #!/bin/bash
+SCRIPT_DIR="$(dirname "$0")"
 
 # Load .env
-if [ ! -f .env ]; then
+if [ ! -f "$SCRIPT_DIR/.env" ]; then
     echo ".env file missing"
     exit 1
 fi
 
 # shellcheck source=/dev/null
-source .env
+source "$SCRIPT_DIR/.env"
 
 # Check required variables
 if [ -z "$KEYFILE" ]; then
