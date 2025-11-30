@@ -33,6 +33,9 @@ temp=$(get_temp)
 # --- Disk free ---
 disk_free=$(get_disk)
 
+# --- true hostname
+systemname=$(hostname)
+
 # --- Tailscale JSON ---
 if command -v tailscale >/dev/null 2>&1; then
     tailscale_json=$(tailscale status --json 2>/dev/null)
@@ -47,6 +50,8 @@ fi
 cat <<EOF
 {
   "hostname": "$(hostname)",
+  "system": "$systemname",
+  "updated": $(date +%s),
   "uptime_seconds": $uptime_seconds,
   "load_average": {
       "1min": $load_1,
