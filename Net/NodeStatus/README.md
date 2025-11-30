@@ -21,3 +21,22 @@ if the server to check is acessed trough tailscale use this command to avoid DNS
 ssh -i ~/.ssh/id_nodestatus user@$(tailscale ip -4 yourTailscaleHost.ts.net) "sh /path/to/nodestatus.sh"
 ```
 
+to check all tailscalehosts at once (via cronjob)
+use nodecheck.sh
+
+this requires a .env file in the same directory 
+example of .env
+```
+# location of the ssh key used to remote execute nodestatus.sh
+KEYFILE="$HOME/.ssh/id_nodecheck"
+
+# Output file prefix (final name becomes prefix + hostname + .json)
+OUTFILE_PREFIX="stats_"
+
+# List of Tailscale hosts
+# all hosts must have the ~/nodestatus.sh locally avaiable
+HOSTS=(
+    "us.echo-rohu.ts.net"
+    "eu.echo-rohu.ts.net"
+    "ap.echo-rohu.ts.net"
+)```
