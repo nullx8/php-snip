@@ -1,6 +1,6 @@
 a very 'crude' way on getting system informations fro ma remote host.
 
-##Preperation
+## Preperation
 - generate a ssh key on the machine that checks
   ```ssh-keygen -t ed25519 -f ~/.ssh/id_nodestatus -C "NodeHealth"```
 - distribute the public key to ~/.ssh/authorized keys on the cleints
@@ -10,7 +10,7 @@ a very 'crude' way on getting system informations fro ma remote host.
 - sensors
 - tailscale
 
-##Use
+## Use
 execute on the checking machine 
 ```
 ssh -i ~/.ssh/id_nodestatus user@yourhost /path/to/nodestatus.sh > some.json
