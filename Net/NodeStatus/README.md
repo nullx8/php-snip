@@ -1,0 +1,23 @@
+a very 'crude' way on getting system informations fro ma remote host.
+
+##Preperation
+- generate a ssh key on the machine that checks
+  ```ssh-keygen -t ed25519 -f ~/.ssh/id_nodestatus -C "NodeHealth"```
+- distribute the public key to ~/.ssh/authorized keys on the cleints
+- copy nodestatus.sh to the clients
+
+## requires the following features to work
+- sensors
+- tailscale
+
+##Use
+execute on the checking machine 
+```
+ssh -i ~/.ssh/id_nodestatus user@yourhost /path/to/nodestatus.sh > some.json
+```
+
+if the server to check is acessed trough tailscale use this command to avoid DNS errors
+```
+ssh -i ~/.ssh/id_nodestatus user@$(tailscale ip -4 yourTailscaleHost.ts.net) "sh /path/to/nodestatus.sh"
+```
+
