@@ -36,7 +36,12 @@ OUTFILE_PREFIX="stats_"
 # List of Tailscale hosts
 # all hosts must have the ~/nodestatus.sh locally avaiable
 HOSTS=(
-    "us.echo-rohu.ts.net"
-    "eu.echo-rohu.ts.net"
-    "ap.echo-rohu.ts.net"
+    "us.echo-bu.ts.net"
+    "eu.echo-externalnet.ts.net"
+    "ap.echo-bu.ts.net"
 )```
+
+## Php export (for remote use)
+use nodecheck.php?host=your.tailscale.ts.net
+to get a json array of the specific host with all informations
+
